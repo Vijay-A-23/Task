@@ -1,0 +1,38 @@
+-- Create table
+CREATE TABLE accounts (
+    account_id INT PRIMARY KEY,
+    account_name VARCHAR(50),
+    balance DECIMAL(10,2)
+);
+
+-- Insert sample data
+INSERT INTO accounts VALUES (1, 'Alice', 1000.00);
+INSERT INTO accounts VALUES (3, 'Charlie', 500.00);
+
+-- Begin the transaction
+BEGIN;
+
+-- Step 1: Deduct 500 from account 1 (Alice)
+UPDATE accounts
+SET balance = balance - 500.00
+WHERE account_id = 1;
+
+-- Create a SAVEPOINT after deduction
+SAVEPOINT after_deduction;
+
+-- Step 2: Try to credit account 2 (which does not exist, will fail)
+-- This step is supposed to fail (simulate error)
+UPDATE accounts
+SET balance = balance + 500.00
+WHERE account_id = 2;
+
+-- Step 3: Rollback to SAVEPOINT (undo failed step only)
+ROLLBACK TO after_deduction;
+
+-- Step 4: Correct credit — credit account 3 (Charlie) instead
+UPDATE accounts
+SET balance = balance + 500.00
+WHERE account_id = 3;
+
+-- Step 5: Commit the transaction
+COMMIT;
